@@ -1,0 +1,35 @@
+John Doe
+Software Engineer
+email: john.doe@email.com
+Phone: (123) 456-7890
+
+SUMMARY
+Experienced software engineer with 5+ years of experience in Python development and machine learning.
+
+SKILLS
+- Programming: Python, JavaScript, Java
+- Frameworks: Django, Flask, React
+- Tools: Git, Docker, AWS
+- Machine Learning: TensorFlow, PyTorch
+
+EXPERIENCE
+Senior Software Engineer | Tech Corp
+2020 - Present
+- Developed machine learning models for text classification
+- Implemented RESTful APIs using FastAPI
+- Managed team of 3 junior developers
+
+Software Engineer | StartUp Inc
+2018 - 2020
+- Built web applications using Django
+- Optimized database queries improving performance by 40%
+- Implemented CI/CD pipelines
+
+EDUCATION
+Bachelor of Science in Computer Science
+University of Technology
+2014 - 2018
+
+CERTIFICATIONS
+- AWS Certified Developer
+- Machine Learning Specialization - Coursera 

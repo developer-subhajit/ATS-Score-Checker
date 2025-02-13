@@ -1,0 +1,39 @@
+Senior Machine Learning Engineer
+Location: San Francisco, CA (Hybrid)
+Company: AI Solutions Inc.
+
+About Us:
+AI Solutions Inc. is a leading AI company focused on building next-generation machine learning solutions.
+
+Job Description:
+We are seeking an experienced Senior Machine Learning Engineer to join our growing team. The ideal candidate will have strong programming skills and experience in developing production-ready ML models.
+
+Required Skills:
+- 5+ years of experience in software development
+- Strong proficiency in Python
+- Experience with ML frameworks (TensorFlow, PyTorch)
+- Experience with RESTful APIs and microservices
+- Strong understanding of ML/DL algorithms
+- Experience with cloud platforms (AWS/GCP)
+
+Preferred Qualifications:
+- Experience with NLP and text processing
+- Knowledge of containerization (Docker, Kubernetes)
+- Experience with CI/CD pipelines
+- Master's or PhD in Computer Science or related field
+
+Responsibilities:
+- Design and implement ML models for production
+- Optimize model performance and scalability
+- Lead technical discussions and mentor junior engineers
+- Collaborate with cross-functional teams
+- Write clean, maintainable, and well-tested code
+
+Benefits:
+- Competitive salary
+- Health, dental, and vision insurance
+- 401(k) matching
+- Flexible work hours
+- Professional development budget
+
+To apply, please send your resume to careers@aisolutions.com 

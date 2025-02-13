@@ -4,7 +4,7 @@ Text preprocessing utilities for cleaning and normalizing text data.
 import re
 from typing import List, Optional
 import nltk
-from nltk.tokenize import word_tokenize
+from nltk.tokenize import word_tokenize, RegexpTokenizer
 from nltk.corpus import stopwords
 from nltk.stem import WordNetLemmatizer
 import logging
@@ -36,6 +36,7 @@ class TextProcessor:
         self.language = language
         self.stop_words = set(stopwords.words(language))
         self.lemmatizer = WordNetLemmatizer()
+        self.word_tokenizer = RegexpTokenizer(r'\w+')
     
     def clean_text(self, text: str) -> str:
         """
@@ -74,7 +75,7 @@ class TextProcessor:
         Returns:
             Text with stopwords removed
         """
-        words = word_tokenize(text)
+        words = self.word_tokenizer.tokenize(text)
         filtered_words = [word for word in words if word.lower() not in self.stop_words]
         return ' '.join(filtered_words)
     
@@ -88,7 +89,7 @@ class TextProcessor:
         Returns:
             Lemmatized text
         """
-        words = word_tokenize(text)
+        words = self.word_tokenizer.tokenize(text)
         lemmatized_words = [self.lemmatizer.lemmatize(word) for word in words]
         return ' '.join(lemmatized_words)
     

@@ -93,9 +93,32 @@ cover/
 data/raw/*
 data/processed/*
 data/jobs/*
+data/results/*
 !data/raw/.gitkeep
 !data/processed/.gitkeep
 !data/jobs/.gitkeep
+!data/results/.gitkeep
+
+# Sensitive files
+**/model_validation_1year_experience.*
+**/*CV*
+**/*cv*
+**/*resume*
+**/*Resume*
+**/JD_*
+**/job_description*
+**/*.pdf
+**/*.docx
+**/*.doc
+**/*.rtf
+
+# Model files
+models/*.bin
+models/*.pt
+models/*.pth
+models/*.h5
+models/*.pkl
+models/*.model
 
 # Documentation
 docs/_build/

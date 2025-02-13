@@ -1,6 +1,7 @@
 # ATS Score Checker
 
 [![Tests](https://github.com/developer-subhajit/ATS-Score-Checker/actions/workflows/test.yml/badge.svg)](https://github.com/developer-subhajit/ATS-Score-Checker/actions/workflows/test.yml)
+[![codecov](https://codecov.io/gh/developer-subhajit/ATS-Score-Checker/branch/main/graph/badge.svg)](https://codecov.io/gh/developer-subhajit/ATS-Score-Checker)
 
 An intelligent system to evaluate resume compatibility with job descriptions using multiple similarity scoring methods.
 

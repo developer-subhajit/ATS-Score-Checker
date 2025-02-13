@@ -1,17 +1,39 @@
 name: Run Tests
 
 on:
+    pull_request:
+        types: [opened, reopened, labeled, synchronize]
     push:
         branches: [main]
-    pull_request:
-        branches: [main]
+        paths:
+            - "src/**"
+            - "tests/**"
+            - "requirements.txt"
+            - ".github/workflows/**"
 
 permissions:
     contents: read
     pull-requests: write
 
 jobs:
+    should-run-tests:
+        runs-on: ubuntu-latest
+        outputs:
+            run-tests: ${{ steps.check.outputs.run-tests }}
+        steps:
+            - id: check
+              run: |
+                  if [[ "${{ github.event_name }}" == "push" && "${{ github.ref }}" == "refs/heads/main" ]]; then
+                      echo "run-tests=true" >> $GITHUB_OUTPUT
+                  elif [[ "${{ github.event_name }}" == "pull_request" && "${{ contains(github.event.pull_request.labels.*.name, 'ready-for-test') }}" == "true" ]]; then
+                      echo "run-tests=true" >> $GITHUB_OUTPUT
+                  else
+                      echo "run-tests=false" >> $GITHUB_OUTPUT
+                  fi
+
     test:
+        needs: should-run-tests
+        if: needs.should-run-tests.outputs.run-tests == 'true'
         runs-on: ubuntu-latest
 
         steps:
@@ -27,12 +49,14 @@ jobs:
               run: |
                   python -m pip install --upgrade pip
                   pip install -r requirements.txt
-                  pip install pytest-cov
-                  python -m nltk.downloader punkt stopwords wordnet averaged_perceptron_tagger
+                  pip install pytest-cov pytest-xdist
+                  python -m nltk.downloader -d ./nltk_data punkt stopwords wordnet averaged_perceptron_tagger
 
             - name: Run tests with coverage
+              env:
+                  NLTK_DATA: ./nltk_data
               run: |
-                  pytest tests/ -v --color=yes --cov=src --cov-report=xml --cov-report=html
+                  pytest tests/ -v --color=yes --cov=src --cov-report=xml --cov-report=html -n auto --dist loadfile
 
             - name: Upload coverage reports to Codecov
               uses: codecov/codecov-action@v4
@@ -44,15 +68,30 @@ jobs:
                   fail_ci_if_error: true
 
             - name: Upload test results
-              if: always()
+              if: failure()
               uses: actions/upload-artifact@v4
               with:
                   name: test-results
                   path: |
-                      .pytest_cache
                       coverage.xml
                       htmlcov
-                  retention-days: 30
+                  retention-days: 7
+
+            - name: Cleanup coverage files
+              if: always()
+              run: |
+                  echo "Starting cleanup of coverage files..."
+                  echo "Removing .coverage file..."
+                  rm -f .coverage
+                  echo "Removing coverage.xml file..."
+                  rm -f coverage.xml
+                  echo "Removing htmlcov directory..."
+                  rm -rf htmlcov/
+                  echo "Removing pytest cache..."
+                  rm -rf .pytest_cache/
+                  echo "Cleanup complete. Verifying..."
+                  ls -la
+                  echo "Coverage files should be deleted but already uploaded to Codecov"
 
     notify:
         needs: test

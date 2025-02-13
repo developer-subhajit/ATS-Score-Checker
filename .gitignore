@@ -123,3 +123,7 @@ models/*.model
 # Documentation
 docs/_build/
 docs/generated/
+
+# Notebooks
+notebooks/*
+*.ipynb

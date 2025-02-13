@@ -52,11 +52,25 @@ jobs:
                   pip install pytest-cov pytest-xdist
                   python -m nltk.downloader -d ./nltk_data punkt stopwords wordnet averaged_perceptron_tagger
 
+            - name: Create test directories
+              run: |
+                  mkdir -p tests/data/raw
+                  mkdir -p tests/data/processed
+                  mkdir -p tests/data/jobs
+                  mkdir -p tests/data/results
+
             - name: Run tests with coverage
               env:
                   NLTK_DATA: ./nltk_data
               run: |
-                  pytest tests/ -v --color=yes --cov=src --cov-report=xml --cov-report=html -n auto --dist loadfile
+                  # First run preprocessing tests with detailed output
+                  python -m pytest tests/test_preprocessing.py -v --tb=long || {
+                      echo "Preprocessing tests failed. Full error output above."
+                      exit 1
+                  }
+
+                  # Then run all tests with coverage
+                  python -m pytest tests/ -v --color=yes --cov=src --cov-report=xml --cov-report=html -n auto --dist loadfile
 
             - name: Upload coverage reports to Codecov
               uses: codecov/codecov-action@v4

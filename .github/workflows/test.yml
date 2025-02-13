@@ -70,16 +70,7 @@ jobs:
                   }
 
                   # Then run all tests with coverage
-                  python -m pytest tests/ -v --color=yes --cov=src --cov-report=xml --cov-report=html -n auto --dist loadfile
-
-            - name: Upload coverage reports to Codecov
-              uses: codecov/codecov-action@v4
-              env:
-                  CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
-              with:
-                  files: ./coverage.xml
-                  flags: unittests
-                  fail_ci_if_error: true
+                  python -m pytest tests/ -v --color=yes --cov=src --cov-report=term-missing -n auto --dist loadfile
 
             - name: Upload test results
               if: failure()
@@ -87,7 +78,7 @@ jobs:
               with:
                   name: test-results
                   path: |
-                      coverage.xml
+                      .coverage
                       htmlcov
                   retention-days: 7
 
@@ -97,15 +88,12 @@ jobs:
                   echo "Starting cleanup of coverage files..."
                   echo "Removing .coverage file..."
                   rm -f .coverage
-                  echo "Removing coverage.xml file..."
-                  rm -f coverage.xml
                   echo "Removing htmlcov directory..."
                   rm -rf htmlcov/
                   echo "Removing pytest cache..."
                   rm -rf .pytest_cache/
                   echo "Cleanup complete. Verifying..."
                   ls -la
-                  echo "Coverage files should be deleted but already uploaded to Codecov"
 
     notify:
         needs: test

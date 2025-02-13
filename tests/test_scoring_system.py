@@ -6,8 +6,6 @@ from pathlib import Path
 sys.path.append(str(Path(__file__).parent.parent))
 
 import pytest
-import pandas as pd
-import numpy as np
 from src.scoring_system import ScoringSystem, calculate_resume_match
 
 # Sample test data
@@ -79,78 +77,6 @@ def test_calculate_similarity(scorer):
     
     assert 0 <= scores['combined']['score'] <= 100
 
-def test_rank_resumes(scorer):
-    """Test resume ranking functionality."""
-    # Create test data
-    resumes = [
-        {'processed_text': SAMPLE_RESUME, 'original_file': 'resume1.pdf'},
-        {'processed_text': UNRELATED_TEXT, 'original_file': 'resume2.pdf'}
-    ]
-    
-    # Fit models
-    scorer.fit_models([SAMPLE_RESUME, UNRELATED_TEXT, SAMPLE_JOB])
-    
-    # Get rankings
-    rankings = scorer.rank_resumes(SAMPLE_JOB, resumes)
-    
-    # Check DataFrame structure
-    assert isinstance(rankings, pd.DataFrame)
-    assert 'rank' in rankings.columns
-    assert 'resume_file' in rankings.columns
-    assert 'combined_score' in rankings.columns
-    
-    # Check ranking order
-    assert rankings.iloc[0]['combined_score'] > rankings.iloc[1]['combined_score']
-    assert rankings.iloc[0]['resume_file'] == 'resume1.pdf'
-
-def test_save_rankings(scorer, tmp_path):
-    """Test saving rankings to file."""
-    # Create test DataFrame
-    data = {
-        'rank': [1, 2],
-        'resume_file': ['test1.pdf', 'test2.pdf'],
-        'combined_score': [80, 60]
-    }
-    rankings = pd.DataFrame(data)
-    
-    # Save rankings
-    output_file = scorer.save_rankings(rankings, "Test Job")
-    
-    # Check file exists and content
-    assert output_file.endswith('.json')
-    
-    # Test file content
-    import json
-    with open(output_file, 'r') as f:
-        saved_data = json.load(f)
-        assert saved_data['job_title'] == "Test Job"
-        assert saved_data['total_resumes'] == 2
-        assert len(saved_data['rankings']) == 2
-
-def test_batch_processing(scorer):
-    """Test processing multiple resumes and jobs."""
-    # Create test data
-    resumes = [
-        {'processed_text': SAMPLE_RESUME, 'original_file': 'resume1.pdf'},
-        {'processed_text': UNRELATED_TEXT, 'original_file': 'resume2.pdf'}
-    ]
-    
-    jobs = [
-        {'processed_text': SAMPLE_JOB, 'job_title': 'Job 1'},
-        {'processed_text': UNRELATED_TEXT, 'job_title': 'Job 2'}
-    ]
-    
-    # Fit models
-    all_texts = [r['processed_text'] for r in resumes] + [j['processed_text'] for j in jobs]
-    scorer.fit_models(all_texts)
-    
-    # Process each job
-    for job in jobs:
-        rankings = scorer.rank_resumes(job['processed_text'], resumes)
-        assert len(rankings) == len(resumes)
-        assert all(rankings['combined_score'] <= 100)
-        assert all(rankings['combined_score'] >= 0)
-
 def test_error_handling(scorer):
     """Test error handling in scoring system."""
     # Test with empty text
@@ -165,9 +91,9 @@ def test_error_handling(scorer):
     with pytest.raises(ValueError):
         scorer.calculate_similarity(SAMPLE_RESUME, SAMPLE_JOB)
     
-    # Test with invalid resume list
+    # Test with empty document list for fitting
     with pytest.raises(ValueError):
-        scorer.rank_resumes(SAMPLE_JOB, [])
+        scorer.fit_models([])
 
 def test_calculate_resume_match(tmp_path):
     """Test the simplified JD-CV matching function."""

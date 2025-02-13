@@ -4,7 +4,7 @@ Text preprocessing utilities for cleaning and normalizing text data.
 import re
 from typing import List, Optional
 import nltk
-from nltk.tokenize import word_tokenize, RegexpTokenizer
+from nltk.tokenize import word_tokenize, RegexpTokenizer, sent_tokenize
 from nltk.corpus import stopwords
 from nltk.stem import WordNetLemmatizer
 import logging
@@ -36,7 +36,7 @@ class TextProcessor:
         self.language = language
         self.stop_words = set(stopwords.words(language))
         self.lemmatizer = WordNetLemmatizer()
-        self.word_tokenizer = RegexpTokenizer(r'\w+')
+        self.word_tokenizer = RegexpTokenizer(r'[a-zA-Z]+')
     
     def clean_text(self, text: str) -> str:
         """
@@ -51,19 +51,29 @@ class TextProcessor:
         # Convert to lowercase
         text = text.lower()
         
-        # Remove email addresses
-        text = re.sub(r'\S+@\S+', ' ', text)
+        # Remove email addresses and URLs
+        text = re.sub(r'\S+@\S+|http\S+|www.\S+', ' ', text)
         
-        # Remove URLs
-        text = re.sub(r'http\S+|www.\S+', ' ', text)
+        # Replace bullet points and list markers with periods
+        text = re.sub(r'[\u2022\-\*]\s*', '. ', text)
         
-        # Remove special characters and numbers
-        text = re.sub(r'[^a-zA-Z\s]', ' ', text)
+        # Replace multiple newlines with periods
+        text = re.sub(r'\n+', '. ', text)
         
-        # Remove extra whitespace
+        # Remove other special characters and numbers
+        text = re.sub(r'[^a-zA-Z\s\.]', ' ', text)
+        
+        # Normalize spaces around periods
+        text = re.sub(r'\s*\.\s*', '. ', text)
+        
+        # Clean up multiple spaces and periods
+        text = re.sub(r'\.+', '. ', text)
         text = re.sub(r'\s+', ' ', text)
         
-        return text.strip()
+        # Split into sentences and filter empty ones
+        sentences = [s.strip() for s in text.split('.') if s.strip()]
+        
+        return '. '.join(sentences)
     
     def remove_stopwords(self, text: str) -> str:
         """
@@ -75,9 +85,18 @@ class TextProcessor:
         Returns:
             Text with stopwords removed
         """
-        words = self.word_tokenizer.tokenize(text)
-        filtered_words = [word for word in words if word.lower() not in self.stop_words]
-        return ' '.join(filtered_words)
+        # Split into sentences
+        sentences = [s.strip() for s in text.split('.') if s.strip()]
+        
+        # Process each sentence
+        processed_sentences = []
+        for sentence in sentences:
+            words = self.word_tokenizer.tokenize(sentence)
+            filtered_words = [word for word in words if word.lower() not in self.stop_words]
+            if filtered_words:  # Only add non-empty sentences
+                processed_sentences.append(' '.join(filtered_words))
+        
+        return '. '.join(processed_sentences)
     
     def lemmatize_text(self, text: str) -> str:
         """

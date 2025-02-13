@@ -1,5 +1,8 @@
 # Project specific
 project-scope/
+*.bak
+*.tmp
+*.temp
 
 # Python
 __pycache__/
@@ -29,6 +32,9 @@ venv/
 ENV/
 env/
 .env
+.venv
+env.bak/
+venv.bak/
 
 # IDE specific files
 .idea/
@@ -38,6 +44,8 @@ env/
 .project
 .pydevproject
 .settings/
+*.sublime-workspace
+*.sublime-project
 
 # macOS specific
 .DS_Store
@@ -63,6 +71,23 @@ Icon
 .env.development.local
 .env.test.local
 .env.production.local
+*.sqlite
+*.db
+
+# Coverage reports
+htmlcov/
+.tox/
+.nox/
+.coverage
+.coverage.*
+.cache
+nosetests.xml
+coverage.xml
+*.cover
+*.py,cover
+.hypothesis/
+.pytest_cache/
+cover/
 
 # Data directories
 data/raw/*
@@ -71,3 +96,7 @@ data/jobs/*
 !data/raw/.gitkeep
 !data/processed/.gitkeep
 !data/jobs/.gitkeep
+
+# Documentation
+docs/_build/
+docs/generated/

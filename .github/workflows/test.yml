@@ -44,13 +44,23 @@ jobs:
               with:
                   python-version: "3.11"
                   cache: "pip"
+                  cache-dependency-path: |
+                      requirements.txt
 
             - name: Install dependencies
               run: |
                   python -m pip install --upgrade pip
                   pip install -r requirements.txt
                   pip install pytest-cov pytest-xdist
-                  python -m nltk.downloader -d ./nltk_data punkt stopwords wordnet averaged_perceptron_tagger
+                  # Cache NLTK data
+                  python -m nltk.downloader -d ${{ github.workspace }}/nltk_data punkt stopwords wordnet averaged_perceptron_tagger
+
+            # Add cache for NLTK data
+            - name: Cache NLTK Data
+              uses: actions/cache@v4
+              with:
+                  path: ${{ github.workspace }}/nltk_data
+                  key: nltk-data-${{ hashFiles('setup_nltk.py') }}
 
             - name: Create test directories
               run: |
@@ -61,7 +71,7 @@ jobs:
 
             - name: Run tests with coverage
               env:
-                  NLTK_DATA: ./nltk_data
+                  NLTK_DATA: ${{ github.workspace }}/nltk_data
               run: |
                   # First run preprocessing tests with detailed output
                   python -m pytest tests/test_preprocessing.py -v --tb=long || {

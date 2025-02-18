@@ -3,7 +3,14 @@ Main FastAPI application module.
 """
 
 import logging
-from typing import Dict
+import os
+import sys
+from pathlib import Path
+
+# Add project root to Python path
+project_root = str(Path(__file__).parent.parent.parent)
+if project_root not in sys.path:
+    sys.path.append(project_root)
 
 import uvicorn
 from fastapi import FastAPI
@@ -11,7 +18,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
 # Import routers
-from .routers import files, scores
+from src.api.routers import files, scores
 
 # Configure logging
 logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
@@ -43,7 +50,7 @@ app.include_router(scores.router, prefix="/api/v1/scores", tags=["scores"])
 
 # Health check endpoint
 @app.get("/api/health")
-async def health_check() -> Dict[str, str]:
+async def health_check():
     """Health check endpoint."""
     return {"status": "healthy"}
 
@@ -56,5 +63,16 @@ async def general_exception_handler(request, exc):
     return JSONResponse(status_code=500, content={"detail": "Internal server error"})
 
 
+def start():
+    """Start the FastAPI application."""
+    uvicorn.run(
+        "src.api.main:app",
+        host="0.0.0.0",
+        port=8000,
+        reload=True,
+        reload_dirs=[project_root],
+    )
+
+
 if __name__ == "__main__":
-    uvicorn.run("main:app", host="0.0.0.0", port=8000, reload=True)
+    start()

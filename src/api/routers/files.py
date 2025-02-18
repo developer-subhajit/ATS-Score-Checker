@@ -3,6 +3,7 @@ File upload and management endpoints.
 """
 
 import logging
+import os
 import uuid
 from datetime import datetime
 from typing import Optional
@@ -36,7 +37,24 @@ async def upload_resume(file: UploadFile = File(...), metadata: Optional[FileMet
             "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
             "text/plain",
         ]:
-            raise HTTPException(status_code=400, detail="Invalid file type")
+            raise HTTPException(
+                status_code=400, detail="Invalid file type. Only PDF, DOCX, and TXT files are supported."
+            )
+
+        # Check file size (10MB limit)
+        MAX_FILE_SIZE = 10 * 1024 * 1024  # 10MB
+        file_size = 0
+        content = []
+
+        # Read file in chunks
+        chunk_size = 1024 * 1024  # 1MB chunks
+        while chunk := await file.read(chunk_size):
+            content.append(chunk)
+            file_size += len(chunk)
+            if file_size > MAX_FILE_SIZE:
+                raise HTTPException(
+                    status_code=400, detail=f"File too large. Maximum size is {MAX_FILE_SIZE/1024/1024}MB"
+                )
 
         # Generate unique ID
         file_id = str(uuid.uuid4())
@@ -44,11 +62,17 @@ async def upload_resume(file: UploadFile = File(...), metadata: Optional[FileMet
         # Save file temporarily
         temp_path = f"data/raw/{file_id}_{file.filename}"
         with open(temp_path, "wb") as f:
-            content = await file.read()
-            f.write(content)
+            for chunk in content:
+                f.write(chunk)
 
         # Process resume
-        result = data_manager.save_resume(temp_path)
+        try:
+            result = data_manager.save_resume(temp_path)
+        except Exception as e:
+            # Clean up temp file if processing fails
+            if os.path.exists(temp_path):
+                os.remove(temp_path)
+            raise HTTPException(status_code=400, detail=str(e))
 
         return FileResponse(
             file_id=file_id,
@@ -59,6 +83,8 @@ async def upload_resume(file: UploadFile = File(...), metadata: Optional[FileMet
             metadata=metadata.dict() if metadata else None,
         )
 
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error uploading resume: {str(e)}")
         raise HTTPException(status_code=500, detail="Error processing resume")
@@ -105,6 +131,54 @@ async def upload_job_description(file: UploadFile = File(...), metadata: Optiona
 
     except Exception as e:
         logger.error(f"Error uploading job description: {str(e)}")
+        raise HTTPException(status_code=500, detail="Error processing job description")
+
+
+@router.post("/job/text", response_model=FileResponse)
+async def upload_job_description_text(
+    text: str = Form(...), title: Optional[str] = Form(None), company: Optional[str] = Form(None)
+) -> FileResponse:
+    """
+    Upload job description as text.
+    """
+    try:
+        # Validate text content
+        if not text.strip():
+            raise HTTPException(status_code=400, detail="Job description text cannot be empty")
+
+        if len(text) > 50000:  # Limit text to 50KB
+            raise HTTPException(status_code=400, detail="Text content too large. Maximum size is 50KB")
+
+        # Generate unique ID
+        file_id = str(uuid.uuid4())
+
+        # Save text to temporary file
+        temp_path = f"data/raw/{file_id}_job.txt"
+        with open(temp_path, "w", encoding="utf-8") as f:
+            f.write(text)
+
+        # Process job description
+        try:
+            result = data_manager.save_job_description(temp_path, job_title=title or "Untitled Job", company=company)
+        except Exception as e:
+            # Clean up temp file if processing fails
+            if os.path.exists(temp_path):
+                os.remove(temp_path)
+            raise HTTPException(status_code=400, detail=str(e))
+
+        return FileResponse(
+            file_id=file_id,
+            file_name="job.txt",
+            file_type="txt",
+            file_size=len(text.encode("utf-8")),
+            uploaded_at=datetime.now(),
+            metadata={"title": title, "company": company} if title or company else None,
+        )
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error processing job description text: {str(e)}")
         raise HTTPException(status_code=500, detail="Error processing job description")
 
 

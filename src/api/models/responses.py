@@ -25,6 +25,7 @@ class ScoreResponse(BaseModel):
     resume_id: str = Field(..., description="ID of the resume")
     job_id: str = Field(..., description="ID of the job description")
     tfidf_score: float = Field(..., description="TF-IDF similarity score (0-100)")
+    word2vec_score: float = Field(..., description="Word2Vec similarity score (0-100)")
     sbert_score: float = Field(..., description="SBERT similarity score (0-100)")
     combined_score: float = Field(..., description="Combined weighted score (0-100)")
     calculated_at: datetime = Field(..., description="Calculation timestamp")

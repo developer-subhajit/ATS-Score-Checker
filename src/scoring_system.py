@@ -29,39 +29,13 @@ class ScoringSystem:
 
         Args:
             weights: Dictionary of weights for each method.
-                    Default weights prioritize SBERT for semantic understanding.
-
-        Raises:
-            ValueError: If weights are invalid or don't sum to 1
-        """
-        # Validate and set weights
-        self._validate_and_set_weights(weights)
-
-        # Initialize models
-        self.models = {"tfidf": TFIDFSimilarity(), "word2vec": Word2VecSimilarity(), "sbert": SBERTSimilarity()}
-
-        # Validate models match weights
-        if not all(method in self.models for method in self.weights):
-            raise ValueError("Weights specified for undefined methods")
-
-        self.is_fitted = False
-        self._cache = {}
-
-    def _validate_and_set_weights(self, weights: Optional[Dict[str, float]]) -> None:
-        """
-        Validate and set scoring weights.
-
-        Args:
-            weights: Dictionary of weights for each method
-
-        Raises:
-            ValueError: If weights are invalid
+                    Default weights prioritize semantic understanding.
         """
         # Default weights if none provided
         self.weights = weights or {
-            "sbert": 0.5,  # SBERT gets highest weight for semantic understanding
+            "tfidf": 0.3,  # TF-IDF for keyword matching
             "word2vec": 0.3,  # Word2Vec for contextual similarity
-            "tfidf": 0.2,  # TF-IDF for keyword matching
+            "sbert": 0.4,  # SBERT for semantic understanding
         }
 
         # Validate weights
@@ -77,6 +51,16 @@ class ScoringSystem:
             raise ValueError("Weights cannot sum to zero")
 
         self.weights = {k: v / total for k, v in self.weights.items()}
+
+        # Initialize models
+        self.models = {"tfidf": TFIDFSimilarity(), "word2vec": Word2VecSimilarity(), "sbert": SBERTSimilarity()}
+
+        # Validate models match weights
+        if not all(method in self.models for method in self.weights):
+            raise ValueError("Weights specified for undefined methods")
+
+        self.is_fitted = False
+        self._cache = {}
 
     def _validate_text(self, text: str, name: str = "text") -> None:
         """
